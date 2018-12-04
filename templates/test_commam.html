@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html xmlns:v-on="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>进程间的通信</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <!-- <script src="https://cdn.bootcss.com/vue/2.5.16/vue.esm.browser.js"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.bootcss.com/echarts/4.2.0-rc.2/echarts.min.js"></script>
+    <!-- <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script> -->
+    <title></title>
+    <link rel="stylesheet" href="">
+    <style type="text/css">
+    #bg_mask {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        margin-top: 0px;
+        width: 981px;
+        height: 610px;
+        /*background: url("img_dot_white.jpg") center;*/
+        z-index: 0;
+        visibility: hidden;
+    }
+
+    #frontlayer {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: 70px 140px 175px 140px;
+        padding: 30px;
+        width: 700px;
+        height: 400px;
+        background-color: orange;
+        visibility: hidden;
+        border: 1px solid black;
+        z-index: 1;
+    }
+    </style>
+</head>
+
+<body>
+{% raw %}
+    <template id="aa">
+        <div>
+            发送数据a:{{msg}}
+            <input type="button" @click="send" value="点击查询10日线上穿20日线股票">
+        </div>
+    </template>
+    <template id="bb">
+        <div>
+            发送数据b:{{msg}}
+            <input type="button" @click="send" value="SendTo-cc">
+        </div>
+    </template>
+    <template id="cc">
+        <div id="baselayer">
+            <div>
+                <ul>
+                    <li v-for="(value,key) in msg2">
+                        <div>
+                            {{key}}
+
+                        </div>
+                        <div>
+                        	<button v-on:click="drawLine(key,value)">点击查询<span style="color: green;font-weight: bold;">{{key}}</span>日线图</button>
+                            <div :id="key" style="width: 50%;height:400px;border: 1px" ></div>
+                            
+                        </div>
+                        <!--                         <input type="button" :value=key onclick="showFrontLayer();" />
+
+                        <div id="bg_mask">
+                            <div id="frontlayer">
+                                <input type="button" value="隐藏" onclick="hideFrontLayer();" />
+                                <hr>
+                                {{key}}
+                            </div>
+                        </div> -->
+                    </li>
+                </ul>
+            </div>
+            <!-- 接收到数据是:{{msg}}/receive:{{msg2}},{{msg3}} -->
+            <!--  <div>
+                <ul id="liebiao">
+                    <li v-for="(value,key) in msg2">
+                        {{ key }} {{value}}
+                    </li>
+                </ul>
+            </div> -->
+        </div>
+    </template>
+    <script type="text/javascript">
+    window.onload = function() {
+        let Event = new Vue();
+        let aa = {
+            template: '#aa',
+            data() {
+                return { msg: 'aa data' }
+            },
+            methods: {
+                send() {
+                    // var s = ''
+                    axios.get('http://127.0.0.1:5000/api/zxg').then(function(response) {
+                            this.msg = response.data
+                            console.log(this.msg)
+                            // 把注册时间放到里面去写,因为是异步的,放到外面去注册,不会返回值
+                            Event.$emit('a-send', this.msg)
+                            // console.log(s)
+                        })
+                        .catch(function(error) {
+                            console.log(error);
+                        });
+
+
+                }
+            }
+        };
+
+        let bb = {
+            template: '#bb',
+            data() {
+                return { msg: 'bb data' }
+            },
+            methods: {
+                send() {
+                    Event.$emit('b-send', this.msg)
+                },
+
+
+            }
+        };
+
+        let cc = {
+            template: '#cc',
+            data() {
+                return {
+                    msg: 'cc data',
+                    msg2: '',
+                    msg3: ''
+                }
+            },
+            mounted() {
+
+                Event.$on('a-send', (data) => { this.msg2 = data });
+                Event.$on('b-send', (data) => { this.msg3 = data });
+                // this.drawLine()
+            },
+            // 这个方法必须放到这里?
+            methods: {
+                drawLine: function(key,data) {
+                	var myChart = echarts.init(document.getElementById(key));
+                	var min = []
+                	var max = []
+                	// date = data[3]["date"]
+                	// 
+                	min.push(Math.min.apply(null,data[0]["ma5"]))
+                	min.push(Math.min.apply(null,data[1]["ma10"]))
+                	min.push(Math.min.apply(null,data[2]["ma20"]))
+                	
+                	var min0 = Math.round(Math.min.apply(null,min)-1);
+                	console.log(min0)
+
+                	max.push(Math.max.apply(null,data[0]["ma5"]))
+                	max.push(Math.max.apply(null,data[1]["ma10"]))
+                	max.push(Math.max.apply(null,data[2]["ma20"]))
+
+                	var max0 = Math.round(Math.max.apply(null,max)+1)
+                	console.log(max0)
+                	// console.log( Math.max.apply(null,data[0]["ma5"]))
+                    var option = {
+                        title: {
+                            text: '日线',
+                            left: 'center'
+                        },
+                        tooltip: {
+                            trigger: 'item',
+                            formatter: '{a} <br/>{b} : {c}'
+                        },
+                        legend: {
+                            left: 'left',
+                            data: ['5ma', '10ma', '20ma']
+                        },
+                        xAxis: {
+                            type: 'category',
+                            name: '时间',
+                            splitLine: { show: false },
+                            data: data[3]["date"]
+                        },
+                        grid: {
+                            left: '3%',
+                            right: '4%',
+                            bottom: '3%',
+                            containLabel: true
+                        },
+                        yAxis: {
+                            type: 'log',
+                            name: '价格',
+                            min: min0,
+                            max: max0
+                        },
+                        series: [{
+                                name: '5ma',
+                                type: 'line',
+                                data: data[0]["ma5"]
+                            },
+                            {
+                                name: '10ma',
+                                type: 'line',
+                                data: data[1]["ma10"]
+                            },
+                            {
+                                name: '20ma',
+                                type: 'line',
+                                data: data[2]["ma20"]
+                            }
+                        ]
+                    };
+
+					
+                    // 使用刚指定的配置项和数据显示图表。
+                    myChart.setOption(option);
+                    // alert(data);
+                }
+            }
+        };
+
+        let vm = new Vue({
+            el: '#app',
+            components: { //注册组件
+                'aa': aa,
+                'bb': bb,
+                'cc': cc
+            }
+        });
+    }
+    </script>
+    <script type="text/javascript">
+    function showFrontLayer() {
+        document.getElementById('bg_mask').style.visibility = 'visible';
+        document.getElementById('frontlayer').style.visibility = 'visible';
+    }
+
+    function hideFrontLayer() {
+        document.getElementById('bg_mask').style.visibility = 'hidden';
+        document.getElementById('frontlayer').style.visibility = 'hidden';
+    }
+    </script>
+    <div id="app">
+        <!-- 使用三个组件 -->
+        <aa></aa>
+        <bb></bb>
+        <cc></cc>
+    </div>
+{% endraw %}
+</body>
+
+</html>

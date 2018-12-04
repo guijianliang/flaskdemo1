@@ -1,0 +1,51 @@
+{% extends "bases.html" %}
+{% block head %}
+    {{ super() }}
+    <title xmlns:v-on="http://www.w3.org/1999/xhtml">股票</title>
+    <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.5.16/vue.esm.browser.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.staticfile.org/vue/2.2.2/vue.min.js"></script>
+    <style type="text/css">
+        #left {
+            float: left;
+            width: 250px;
+            height: auto;
+            background: #5eb95e;
+        }
+
+        #right {
+            margin-left: 250px;
+            height: auto;
+            background: gray;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <h5>股票查询</h5>
+    <hr> 
+
+    <template id="aa">
+        <div>
+                I am aa component:{{msg}}
+<input type="button" @click="send" value="SendTo-cc">
+        </div>
+    </template>
+
+    <div id="app">
+
+    </div>
+    <script>
+
+    </script>
+{% endblock %}
+{% block js %}
+{% endblock %}
+
+
+
